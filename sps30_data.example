@@ -1,0 +1,19 @@
+{'sensor_data': {
+'mass_density': 
+    {
+        'pm1.0': 1.349, 
+        'pm2.5': 1.794, 
+        'pm4.0': 2.097, 
+        'pm10': 2.248}, 
+'particle_count': 
+    {
+        'pm0.5': 8.262, 
+        'pm1.0': 10.305, 
+        'pm2.5': 10.714, 
+        'pm4.0': 10.769, 
+        'pm10': 10.774
+    }, 
+'particle_size': 0.799, 
+'mass_density_unit': 'ug/m3',
+'particle_count_unit': '#/cm3', 
+'particle_size_unit': 'um'}, 'timestamp': 1677510567}
