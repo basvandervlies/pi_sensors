@@ -9,6 +9,48 @@ def file_and_stdout(fp, str):
     fp.write("%s\n" %str)
     print(str)
 
+
+def sps30_print_header(dev, label):
+    """
+    print sps30 device info
+    """
+    file_and_stdout(f, f"# SPS30 {label} Firmware version: {dev.firmware_version()}")
+    file_and_stdout(f, f"# SPS30 {label} Product type: {dev.product_type()}")
+    file_and_stdout(f, f"# SPS30 {label} Serial number: {dev.serial_number()}")
+    file_and_stdout(f, f"# SPS30 {label} Status register: {dev.read_status_register()}")
+    file_and_stdout(f,
+        f"# Auto cleaning interval {label} : {dev.read_auto_cleaning_interval()}s")
+    #file_and_stdout(f, f"# Set auto cleaning interval {label}: {dev.write_auto_cleaning_interval_days(2)}s")
+    file_and_stdout(f, f"# {label} End\n ")
+
+def sps30_get_data(dev, label):
+    """
+    get a reading from SPS30 device
+    """
+    d = {}
+    massa = f'{label}_m'
+    particle = f'{label}_p'
+
+    r = dev.get_measurement()
+    if (r):
+
+        d[massa] = []
+        d[particle] = []
+
+        print(label)
+        print(r)
+        print(label)
+        m = r['sensor_data']['mass_density']
+        d[massa].append(m['pm2.5'])
+        d[massa].append(m['pm1.0'])
+
+        p = r['sensor_data']['particle_count']
+        d[particle].append(p['pm2.5'])
+        d[particle].append(p['pm1.0'])
+        d[particle].append(p['pm0.5'])
+
+    return d
+
 try:
     f = open("/home/pi/Bureaublad/meeting.csv", "w")
 
@@ -18,15 +60,18 @@ try:
     hpma115S0.init()
     hpma115S0.startParticleMeasurement()
 
-    sps30 = SPS30()
-    file_and_stdout(f, f"# SPS30 Firmware version: {sps30.firmware_version()}")
-    file_and_stdout(f, f"# SPS30 Product type: {sps30.product_type()}")
-    #file_and_stdout(f, f"# SPS30 Serial number: {sps30.serial_number()}")
-    file_and_stdout(f, f"# SPS30 Status register: {sps30.read_status_register()}")
-    file_and_stdout(f,
-        f"# Auto cleaning interval: {sps30.read_auto_cleaning_interval()}s")
-    file_and_stdout(f, f"# Set auto cleaning interval: {sps30.write_auto_cleaning_interval_days(2)}s")
-    sps30.start_measurement()
+    reference = SPS30(bus=1, logger='reference')
+    sps30_print_header(reference, "reference")
+
+    #time.sleep(2)
+
+    measure = SPS30(3)
+    sps30_print_header(measure, "measure")
+
+    reference.start_measurement()
+    measure.start_measurement()
+
+
 
     d = {}
     d['hpma115S0'] = []
@@ -41,20 +86,21 @@ try:
         if (r):
             d['hpma115S0'].append(hpma115S0._pm2_5)
 
-        r = sps30.get_measurement()
+        r = sps30_get_data(reference, "reference")
         if (r):
             print(r)
-            m = r['sensor_data']['mass_density']
-            d['sps30_m'].append(m['pm2.5'])
-            d['sps30_m'].append(m['pm1.0'])
-
-            p = r['sensor_data']['particle_count']
-            d['sps30_p'].append(p['pm2.5'])
-            d['sps30_p'].append(p['pm1.0'])
-            d['sps30_p'].append(p['pm0.5'])
         else:
             time.sleep(1)
             continue
+
+        r = sps30_get_data(measure, "measure")
+        if (r):
+            print(r)
+        else:
+            time.sleep(1)
+            continue
+
+        sys.exit(0)
 
         try:
             #f.write(f, f"{d['hpma115S0'][0]:8}; {d['sps30_m'][0]:9}; {d['sps30_m'][1]:9}; {d['sps30_p'][0]:9}; {d['sps30_p'][1]:9}; {d['sps30_p'][2]:9}\n")
@@ -62,6 +108,10 @@ try:
         except IndexError:
             pass
 
+        d['hpma115S0'] = []
+        d['sps30_m'] = []
+        d['sps30_p'] = []
+        
         time.sleep(5)
 
 except KeyboardInterrupt:
