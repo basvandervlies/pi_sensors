@@ -75,6 +75,7 @@ class SPS30:
         data = self.i2c.read(NBYTES_FIRMWARE_VERSION)
 
         if self.crc_calc(data[:2]) != data[2]:
+            return ".".join(map(str, data[:2]))
             return "CRC mismatched"
 
         return ".".join(map(str, data[:2]))
