@@ -123,12 +123,17 @@ try:
     while True:
         t_rh = sht85_get_data()
 
-        h = hpma115S0.readParticleMeasurement()
-        if (h):
-            hpma['pm2.5'] = hpma115S0._pm2_5
-        else:
-            time.sleep(1)
-            continue
+        try:
+            h = hpma115S0.readParticleMeasurement()
+            if (h):
+                hpma['pm2.5'] = hpma115S0._pm2_5
+            else:
+                time.sleep(1)
+                continue
+        except TypeError as detail:
+            h = 1
+            hpma['pm2.5'] = -1
+            
 
         r = sps30_get_data(reference, "reference")
         e = sps30_get_data(experiment, "experiment")
