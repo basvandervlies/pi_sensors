@@ -43,11 +43,11 @@ def sps30_get_data(dev, label):
         #print(label)
         m = r['sensor_data']['mass_density']
         for i in [ 'pm1.0', 'pm2.5']:
-            d[massa][i] = m[i]
+            d[massa][i] = f"{m[i]:.2f}"
 
         p = r['sensor_data']['particle_count']
         for i in [ 'pm0.5', 'pm1.0', 'pm2.5']:
-            d[particle][i] = p[i]
+            d[particle][i] = f"{p[i]:.2f}"
 
     return d
 
@@ -78,8 +78,8 @@ def sht85_get_data():
     d = {}
     t,rh = sht85.single_shot()
     #dp = sht85.dew_point(t,rh)
-    d['t'] = t
-    d['rh'] = rh
+    d['t'] = f"{t:.2f}"
+    d['rh'] = f"{rh:.2f}"
 
     return d
 
